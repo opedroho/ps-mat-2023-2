@@ -18,4 +18,8 @@ app.use(cookieParser());
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
+/////////////////////////////////////////////////
+import carRouter from './routes/car.js'
+app.use('/car', carRouter)
+
 export default app;
