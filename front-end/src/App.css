@@ -14,14 +14,15 @@
   visibility: visible;
 }
 
-form {
+.form-fields {
   margin: 0 auto;
+  width: 95%;
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
 
-form .MuiFormControl-root {
+.form-fields .MuiFormControl-root {
   min-width: 250px;
   max-width: 600px;
   width: 600px;
