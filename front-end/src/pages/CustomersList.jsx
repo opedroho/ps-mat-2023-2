@@ -10,18 +10,23 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import { Link } from 'react-router-dom'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
 
 export default function CustomersList() {
 
   const API_ENDPOINT = import.meta.env.VITE_API_BASE + 'customer'
 
   const [state, setState] = React.useState({
-    customers: {}
+    customers: {},
+    openDialog: false,
+    deleteId: null
   })
 
   // Desestruturando as variáveis de estado
   const {
-    customers
+    customers,
+    openDialog,
+    deleteId
   } = state
 
   // Este useEffect() será executado apenas uma vez, durante o
@@ -120,11 +125,18 @@ export default function CustomersList() {
     }
   ];
 
-  async function handleDeleteButtonClick(id) {
-    if(confirm('Deseja realmente excluir este item?')) {
+  function handleDeleteButtonClick(id) {
+    setState({ ...state, deleteId: id, openDialog: true })
+  }
+
+  async function handleDialogClose(answer) {
+    // Fecha a caixa de diálogo de confirmação
+    setState({ ...state, openDialog: false })
+
+    if(answer) {
       try {
         // Faz a chamada ao back-end para excluir o cliente
-        const result = await fetch(`${API_ENDPOINT}/${id}`, {
+        const result = await fetch(`${API_ENDPOINT}/${deleteId}`, {
           method: 'DELETE'
         })
         // Se a exclusão tiver sido feita com sucesso, atualiza a listagem
@@ -139,6 +151,15 @@ export default function CustomersList() {
   
   return (
     <>
+
+      <ConfirmDialog
+        title="Confirmar operação"
+        open={openDialog}
+        onClose={handleDialogClose}
+      >
+        Deseja realmente excluir este item?
+      </ConfirmDialog>
+
       <Typography variant="h1" sx={{ mb: '50px' }}>
         Listagem de clientes
       </Typography>
