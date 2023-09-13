@@ -11,22 +11,31 @@ import Button from '@mui/material/Button'
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import { Link } from 'react-router-dom'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import myfetch from '../utils/myfetch'
+import Notification from '../components/ui/Notification'
+import Waiting from '../components/ui/Waiting'
 
 export default function CustomersList() {
-
-  const API_ENDPOINT = import.meta.env.VITE_API_BASE + 'customer'
 
   const [state, setState] = React.useState({
     customers: {},
     openDialog: false,
-    deleteId: null
+    deleteId: null,
+    showWaiting: false,
+    notification: {
+      show: false,
+      severity: 'success',
+      message: ''
+    }
   })
 
   // Desestruturando as variáveis de estado
   const {
     customers,
     openDialog,
-    deleteId
+    deleteId,
+    showWaiting,
+    notification
   } = state
 
   // Este useEffect() será executado apenas uma vez, durante o
@@ -35,18 +44,43 @@ export default function CustomersList() {
     loadData()    // Carrega dos dados do back-end
   }, [])
 
-  async function loadData() {
+  async function loadData(afterDeletion = false) {
+    // Exibe a tela de espera
+    setState({ ...state, showWaiting: true, openDialog: false })
     try {
-      const result = await fetch(API_ENDPOINT)
+      const result = await myfetch.get('customer')
 
-      // Requisição OK
-      if(result.ok) setState({...state, customers: await result.json()})
-      
-      // Requisição com erro
-      else throw new Error(`[HTTP ${result.status}] ${result.statusText}`)
+      let notif = {
+        show: false,
+        severity: 'success',
+        message: ''
+      }
 
+      if(afterDeletion) notif = {
+        show: true,
+        severity: 'success',
+        message: 'Exclusão efetuada com sucesso.'
+      }
+
+      setState({
+        ...state, 
+        customers: result, 
+        showWaiting: false,
+        openDialog: false,
+        notification: notif
+      })
     }
     catch(error) {
+      setState({
+        ...state,
+        showWaiting: false,
+        openDialog: false,
+        notification: {
+          show: true,
+          severity: 'error',
+          message: 'ERRO: ' + error.message
+        }
+      })
       // Exibimos o erro no console
       console.error(error)
     }
@@ -130,23 +164,40 @@ export default function CustomersList() {
   }
 
   async function handleDialogClose(answer) {
-    // Fecha a caixa de diálogo de confirmação
-    setState({ ...state, openDialog: false })
-
     if(answer) {
+      // Fecha a caixa de diálogo de confirmação e exibe a tela de espera
+      setState({ ...state, openDialog: false, showWaiting: true })
       try {
         // Faz a chamada ao back-end para excluir o cliente
-        const result = await fetch(`${API_ENDPOINT}/${deleteId}`, {
-          method: 'DELETE'
-        })
+        await myfetch.delete(`customer/${deleteId}`)
+        
         // Se a exclusão tiver sido feita com sucesso, atualiza a listagem
-        if(result.ok) loadData()
-        alert('Exclusão efetuada com sucesso!')
+        loadData(true)
       }
       catch(error) {
+        setState({
+          ...state,
+          showWaiting: false,
+          openDialog: false,
+          notification: {
+            show: true,
+            severity: 'error',
+            message: 'ERRO: ' + error.message
+          }
+        })
         console.error(error)
       }
     }
+    // Fecha a caixa de diálogo de confirmação
+    else setState({ ...state, openDialog: false })
+  }
+
+  function handleNotificationClose() {
+    setState({...state, notification: { 
+      show: false,
+      severity: 'success',
+      message: ''
+    }});
   }
   
   return (
@@ -159,6 +210,15 @@ export default function CustomersList() {
       >
         Deseja realmente excluir este item?
       </ConfirmDialog>
+
+      <Waiting show={showWaiting} />
+
+      <Notification
+        show={notification.show}
+        severity={notification.severity}
+        message={notification.message}
+        onClose={handleNotificationClose}
+      />
 
       <Typography variant="h1" sx={{ mb: '50px' }}>
         Listagem de clientes
