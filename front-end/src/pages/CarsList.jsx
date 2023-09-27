@@ -48,7 +48,7 @@ export default function CarsList() {
     // Exibe a tela de espera
     setState({ ...state, showWaiting: true, openDialog: false })
     try {
-      const result = await myfetch.get('car')
+      const result = await myfetch.get('car?related=1')
 
       let notif = {
         show: false,
@@ -149,6 +149,14 @@ export default function CarsList() {
       valueFormatter: params => {
         if(params.value) return format(new Date(params.value), 'dd/MM/yyyy')
         else return ''
+      }
+    },
+    {
+      field: 'customer_id',
+      headerName: 'Cliente adquirente',
+      width: 250,
+      valueGetter: params => {
+        return params.row?.customer?.name
       }
     },
     {

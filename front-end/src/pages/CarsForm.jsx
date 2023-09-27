@@ -30,11 +30,13 @@ export default function CarForm() {
     year_manufacture: '',
     imported: false,
     plates: '',
-    selling_price: ''
+    selling_price: '',
+    customer_id: ''
   }
 
   const [state, setState] = React.useState({
-    car: carDefaults,    
+    car: carDefaults, 
+    customers: [],   
     showWaiting: false,
     notification: {
       show: false,
@@ -44,6 +46,15 @@ export default function CarForm() {
     openDialog: false,
     isFormModified: false
   })
+
+  const {
+    car,
+    customers,
+    showWaiting,
+    notification,
+    openDialog,
+    isFormModified
+  } = state
   
   const maskFormChars = {
     '9': '[0-9]',
@@ -52,14 +63,6 @@ export default function CarForm() {
     '@': '[A-Ja-j0-9]', // Aceita letras de A a J (maiúsculas ou minúsculas) e dígitos
     '_': '[\s0-9]'
   }
-
-  const {
-    car,
-    showWaiting,
-    notification,
-    openDialog,
-    isFormModified
-  } = state
   
   const years = []
 
@@ -72,17 +75,34 @@ export default function CarForm() {
     // Verifica se existe o parâmetro id na rota.
     // Caso exista, chama a função fetchData() para carregar
     // os dados indicados pelo parâmetro para edição
-    if(params.id) fetchData()
+    fetchData(params.id)
   }, [])
 
-  async function fetchData() {
+  async function fetchData(isUpdating) {
     // Exibe o backdrop para indicar que uma operação está ocorrendo
     // em segundo plano
     setState({ ...state, showWaiting: true })
     try {
-      const result = await myfetch.get(`car/${params.id}`)
-      result.selling_date = parseISO(result.selling_date)
-      setState({ ...state, showWaiting: false, car: result })
+
+      let car = carDefaults
+
+      // Se estivermos no modo de atualização, devemos carregar o
+      // registro indicado no parâmetro da rota 
+      if(isUpdating) {
+        car = await myfetch.get(`car/${params.id}`)
+        car.selling_date = parseISO(car.selling_date)
+      }
+
+      // Busca a listagem de clientes para preencher o componente
+      // de escolha
+      let customers = await myfetch.get('customer')
+
+      // Cria um cliente "fake" que permite não selecionar nenhum
+      // cliente
+      customers.unshift({id: null, name: '(Nenhum cliente)'})
+
+      setState({ ...state, showWaiting: false, car, customers })
+
     } 
     catch(error) {
       setState({ ...state, 
@@ -252,44 +272,44 @@ export default function CarForm() {
             value={car.year_manufacture}
             onChange={handleFieldChange}
           >
-          {years.map((option) => (
-            <MenuItem key={option} value={option}>
-              {option}
-            </MenuItem>
-          ))}
-        </TextField>
+            {years.map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
 
-        <FormControlLabel 
-          className="MuiFormControl-root"
-          sx={{ justifyContent: "start" }}
-          onChange={handleFieldChange} 
-          control={<Switch defaultChecked />} 
-          label="Importado" 
-          id="imported" 
-          name="imported" 
-          labelPlacement="start" 
-          checked={car.imported}
-        />
+          <FormControlLabel 
+            className="MuiFormControl-root"
+            sx={{ justifyContent: "start" }}
+            onChange={handleFieldChange} 
+            control={<Switch defaultChecked />} 
+            label="Importado" 
+            id="imported" 
+            name="imported" 
+            labelPlacement="start" 
+            checked={car.imported}
+          />
 
-        <InputMask
-          formatChars={maskFormChars}
-          mask="AAA-9@99"
-          value={car.plates.toUpperCase() /* Placas em maiúsculas */ }
-          onChange={handleFieldChange}
-          maskChar=" "
-        >
-          {
-            () =>
-            <TextField 
-              id="plates"
-              name="plates" 
-              label="Placa" 
-              variant="filled"
-              required
-              fullWidth
-              inputProps={{style: {textTransform: 'uppercase'}}}
-            />
-          }
+          <InputMask
+            formatChars={maskFormChars}
+            mask="AAA-9@99"
+            value={car.plates.toUpperCase() /* Placas em maiúsculas */ }
+            onChange={handleFieldChange}
+            maskChar=" "
+          >
+            {
+              () =>
+              <TextField 
+                id="plates"
+                name="plates" 
+                label="Placa" 
+                variant="filled"
+                required
+                fullWidth
+                inputProps={{style: {textTransform: 'uppercase'}}}
+              />
+            }
           </InputMask>
 
           <TextField 
@@ -316,6 +336,25 @@ export default function CarForm() {
               slotProps={{ textField: { variant: 'filled', fullWidth: true } }}
             />
           </LocalizationProvider>
+
+          <TextField
+            id="customer_id"
+            name="customer_id" 
+            label="Cliente adquirente"
+            select
+            defaultValue=""
+            fullWidth
+            variant="filled"
+            helperText="Selecione o cliente"
+            value={car.customer_id}
+            onChange={handleFieldChange}
+          >
+            {customers.map(customer => (
+              <MenuItem key={customer.id} value={customer.id}>
+                {customer.name}
+              </MenuItem>
+            ))}
+          </TextField>
           
         </Box>
 
