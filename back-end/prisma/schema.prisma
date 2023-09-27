@@ -20,6 +20,8 @@ model Car {
   plates            String      @unique   // Índice único
   selling_date      DateTime?             // Campo anulável
   selling_price     Decimal?              // Campo anulável
+  customer_id       Int?        // Opcional
+  customer          Customer?   @relation(fields: [customer_id], references: [id])
 }
 
 model Customer {
@@ -35,4 +37,5 @@ model Customer {
   state             String
   phone             String
   email             String      @unique
+  cars              Car[]       // Carros adquiridos pelo cliente
 }
