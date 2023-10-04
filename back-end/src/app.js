@@ -22,10 +22,14 @@ app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
 /////////////////////////////////////////////////
+
 import carRouter from './routes/car.js'
 app.use('/car', carRouter)
 
 import customerRouter from './routes/customer.js'
 app.use('/customer', customerRouter)
+
+import userRouter from './routes/user.js'
+app.use('/user', userRouter)
 
 export default app;
