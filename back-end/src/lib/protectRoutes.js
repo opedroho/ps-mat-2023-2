@@ -4,7 +4,8 @@ import jwt from 'jsonwebtoken'
 // de autenticação devem ser colocadas no vetor
 // abaixo
 const bypassRoutes = [
-  { uri: '/user/login', method: 'POST' }
+  { uri: '/user/login', method: 'POST' },
+  { uri: '/user', method: 'POST' }
 ]
 
 export default function (req, res, next) {
@@ -19,17 +20,25 @@ export default function (req, res, next) {
     }
   }
 
+  console.log({COOKIE: req.cookies})
+
   // Verifica se o token foi enviado por meio do cookie
-  const token = req.cookies['_DATA_']
+  const token = req.cookies['_data_']
 
   // Se não houver token ~> HTTP 403: Forbidden
-  if(! token) return res.status(403).end()
+  if(! token) {
+    // console.log('NÃO AUTORIZADO 1')
+    return res.status(403).end()
+  }
 
   // Validando o token
   jwt.verify(token, process.env.TOKEN_SECRET, (error, decoded) => {
 
     // Token inválido ou expirado ~> HTTP 403: Forbidden
-    if(error) return res.status(403).end()
+    if(error) {
+      // console.log('NÃO AUTORIZADO 2', {error})
+      return res.status(403).end()
+    }
     
     /*
       Se chegarmos até aqui, o token está OK e temos as informações

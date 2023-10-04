@@ -124,7 +124,7 @@ controller.login = async function(req, res) {
     // Se o usuário não for encontrado, retorna
     // HTTP 401: Unauthorized
     if(! user) {
-      res.clearCookie('_DATA_')   // Apaga qualquer versão prévia do cookie
+      res.clearCookie('_data_')   // Apaga qualquer versão prévia do cookie
       return res.status(401).end()
     }
 
@@ -137,11 +137,11 @@ controller.login = async function(req, res) {
       const token = jwt.sign(
         user,                       // Os dados do usuário
         process.env.TOKEN_SECRET,   // Chave para criptografar o token
-        { expiresIn: '24' }         // Prazo de validade do token
+        { expiresIn: '24h' }         // Prazo de validade do token
       )
 
       // Forma o cookie para retornar ao front-end
-      res.cookie('_DATA_', token, {
+      res.cookie('_data_', token, {
         httpOnly: true,       // HTTP only: o cookie ficará inacessível via JS
         secure: true,
         sameSite: 'None',
@@ -149,12 +149,14 @@ controller.login = async function(req, res) {
         maxAge: 24 * 60 * 60  // 24h
       })
 
+      // console.log(token)
+
       // Retorna HTTP 204: No content
       res.status(204).end()
 
     }
     else {
-      res.clearCookie('_DATA_')   // Apaga qualquer versão prévia do cookie
+      res.clearCookie('_data_')   // Apaga qualquer versão prévia do cookie
       // Senha errada ~> HTTP 401: Unauthorized
       res.status(401).end()
     }
@@ -169,7 +171,7 @@ controller.login = async function(req, res) {
 
 controller.logout = function(req, res) {
   // Apaga o cookie que contém o token
-  res.clearCookie('_DATA_')
+  res.clearCookie('_data_')
   // HTTP 204: No content
   res.status(204).end()
 }
