@@ -175,7 +175,16 @@ controller.login = async function(req, res) {
 
 controller.logout = function(req, res) {
   // Apaga o cookie que contém o token
-  res.clearCookie('_data_')
+  // res.clearCookie('_data_')
+
+  res.cookie('_data_', 'NO USER', {
+    httpOnly: true,       // HTTP only: o cookie ficará inacessível via JS
+    secure: true,
+    sameSite: 'None',
+    path: '/',
+    maxAge: 24 * 60 * 60 * 1000  // 24h
+  })
+
   // HTTP 204: No content
   res.status(204).end()
 }
