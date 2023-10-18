@@ -133,6 +133,10 @@ controller.login = async function(req, res) {
 
     if(passwordMatches) {   // A senha confere
 
+      // Apagamos o campo "password" do objeto user
+      // antes de incluí-lo no token
+      if(user.password) delete user.password
+
       // Formamos um token de autenticação para ser enviado ao front-end
       const token = jwt.sign(
         user,                       // Os dados do usuário

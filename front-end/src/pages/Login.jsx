@@ -123,6 +123,7 @@ export default function Login() {
             value={user.email}
             onChange={handleFieldChange}
             required
+            autoFocus
           />
 
           <TextField

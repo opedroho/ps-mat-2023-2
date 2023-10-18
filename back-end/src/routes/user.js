@@ -4,7 +4,7 @@ import controller from '../controllers/user.js'
 const router = Router()
 
 router.post('/login', controller.login)
-router.get('/logout', controller.logout)
+router.post('/logout', controller.logout)
 
 router.get('/loggedin', controller.loggedin)
 
