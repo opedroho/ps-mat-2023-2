@@ -39,7 +39,7 @@ const CustomerModel = z.object({
   complements: 
     z.string()
     .max(20, { message: 'O complemento pode conter, no máximo, 20 caracteres' })
-    .optional(),
+    .nullable(),
   
   neighborhood: 
     z.string()
@@ -74,6 +74,11 @@ Customer.parse = function(fields) {
 
   // Tira os sublinhados que porventura existam do campo phone
   fields.phone = fields?.phone.replace('_', '')
+
+  // Se o valor recebido de birth_date não for uma data
+  // fazemos a conversão de string para Date
+  if(! (fields.birth_date instanceof Date))
+    fields.birth_date = new Date(fields.birth_date)
 
   return CustomerModel.parse(fields)
 
