@@ -28,7 +28,7 @@ const Customer = z.object({
     z.coerce.date()
     .min(minBirthDate, { message: 'Data de nascimento está muito no passado'})
     .max(maxBirthDate, { message: 'O cliente deve ser maior de 18 anos' })
-    .optional(),
+    .nullable(),
   
   street_name: 
     z.string()
