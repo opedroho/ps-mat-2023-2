@@ -11,7 +11,7 @@ maxBirthDate.setFullYear(maxBirthDate.getFullYear() - 18)  // Data há 18 anos a
 const minBirthDate = new Date()
 minBirthDate.setFullYear(maxBirthDate.getFullYear() - 120)
 
-const CustomerModel = z.object({
+const Customer = z.object({
   name: 
     z.string()
     .min(5, { message: 'O nome deve ter, no mínimo, 5 caracteres' })
@@ -19,11 +19,13 @@ const CustomerModel = z.object({
   
   ident_document: 
     z.string()
+    .trim()
     .length(14, { message: 'O CPF está incompleto'})
     .refine(val => cpf.isValid(val), { message: 'CPF inválido' }),
   
   birth_date: 
-    z.date()
+    // coerce força a conversão para o tipo Date, se o dado recebido for string
+    z.coerce.date()
     .min(minBirthDate, { message: 'Data de nascimento está muito no passado'})
     .max(maxBirthDate, { message: 'O cliente deve ser maior de 18 anos' })
     .optional(),
@@ -55,33 +57,14 @@ const CustomerModel = z.object({
   
   phone: 
     z.string()
-    .length(15, { message: 'O número do telefone/celular está incompleto' }),
+    .transform(v => v.replace('_', '')) // Retira os sublinhados
+    // Depois de um transform(), não podemos usar length(). Por isso, temos que
+    // usar refine() passando uma função personalizada para validar o tamanho do campo
+    .refine(v => v.length == 15, { message: 'O número do telefone/celular está incompleto' }),
   
   email: 
     z.string()
     .email({ message: 'E-mail inválido' })
 })
-
-
-const Customer = {}
-
-Customer.parse = function(fields) {
-
-  // Pré-processamento de campos, se necessário
-  
-  // Tira os espaços em branco do final do campo ident_document
-  fields.ident_document = fields?.ident_document.trim()
-
-  // Tira os sublinhados que porventura existam do campo phone
-  fields.phone = fields?.phone.replace('_', '')
-
-  // Se o valor recebido de birth_date não for uma data
-  // fazemos a conversão de string para Date
-  if(! (fields.birth_date instanceof Date))
-    fields.birth_date = new Date(fields.birth_date)
-
-  return CustomerModel.parse(fields)
-
-}
 
 export default Customer

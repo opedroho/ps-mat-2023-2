@@ -128,6 +128,8 @@ export default function CustomersForm() {
     event.preventDefault(false)   // Evita o recarregamento da página
     try {
 
+      console.log({customer})
+
       // Chama a validação da biblioteca Zod
       Customer.parse(customer)
 
