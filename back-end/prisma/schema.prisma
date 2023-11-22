@@ -47,4 +47,17 @@ model User {
   email             String      @unique
   password          String
   is_admin          Boolean     @default(false)
+  salesperson       Salesperson?
+}
+
+// Tabela de vendedores
+model Salesperson {
+ id                               Int @id @default(autoincrement())
+ user_id                          Int @unique
+ user                             User @relation(fields: [user_id], references: [id])
+ birth_date                       DateTime
+ ident_document                   String
+ salary                           Decimal
+ phone                            String
+ date_of_hire                     DateTime // Data de admissão
 }

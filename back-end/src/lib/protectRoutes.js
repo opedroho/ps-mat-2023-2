@@ -11,8 +11,8 @@ const bypassRoutes = [
 export default function (req, res, next) {
 
   // REMOVER DEPOIS
-  //next()
-  //return
+  next()
+  return
 
   // Verifica se a rota da vez é desprotegida
   for(let route of bypassRoutes) {
